@@ -1,4 +1,4 @@
-# 🚚 Demand-Supply Matching System (AI-Based)
+# 🚚 Demand-Supply Matching System 
 
 ## 📌 Overview
 
@@ -111,29 +111,6 @@ This project solves that by:
 * Model captures demand trends with **moderate error (RMSE)**
 * Most time periods are **balanced**, with some shortages
 * Dynamic allocation improves efficiency and reduces mismatch
-
----
-
-## 🚀 How to Run
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/your-username/demand-supply-system.git
-cd demand-supply-system
-```
-
-2. Install dependencies:
-
-```bash
-pip install pandas numpy matplotlib seaborn scikit-learn
-```
-
-3. Run the script:
-
-```bash
-python your_script_name.py
-```
 
 ---
 
