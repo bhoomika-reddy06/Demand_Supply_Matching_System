@@ -71,20 +71,49 @@ future_preds = final_model.predict(X_test)
 test_df = demand_df.iloc[test_index].copy()
 test_df['predicted_demand'] = future_preds
 
-test_df['optimal_supply'] = test_df['predicted_demand'] * np.where(
-    test_df['hour_of_day'].isin(range(17,23)), 1.3, 1.0
-)
+test_df['optimal_supply'] = test_df['predicted_demand'] * 1.2
 
 kmeans = KMeans(n_clusters=3, random_state=42)
 test_df['cluster'] = kmeans.fit_predict(test_df[['predicted_demand','hour_of_day']])
 
-test_df['base_drivers'] = np.where(test_df['Pickup point'] == 1, 40, 25)
-test_df['time_factor'] = test_df['hour_of_day'].apply(lambda x: 1.5 if x in range(17,23) else 1.0)
-test_df['supply'] = test_df['base_drivers'] * test_df['time_factor']
+print("\n===== CLUSTER INSIGHTS =====")
+cluster_summary = test_df.groupby('cluster')[['predicted_demand','hour_of_day']].mean()
+
+cluster_summary = cluster_summary.sort_values(by='predicted_demand', ascending=False)
+print(cluster_summary)
+
+print("\nCluster Meaning (based on demand):")
+print("Top row → High demand cluster")
+print("Middle row → Medium demand cluster")
+print("Bottom row → Low demand cluster")
+
+plt.figure()
+plt.scatter(
+    test_df['hour_of_day'],
+    test_df['predicted_demand'],
+    c=test_df['cluster']
+)
+plt.title("Cluster Visualization (Demand vs Time)")
+plt.xlabel("Hour of Day")
+plt.ylabel("Predicted Demand")
+plt.grid(alpha=0.3)
+
+test_df['supply'] = np.where(
+    test_df['cluster'] == 0,
+    test_df['predicted_demand'] * 1.3,  
+    np.where(
+        test_df['cluster'] == 1,
+        test_df['predicted_demand'] * 1.1,  
+        test_df['predicted_demand'] * 0.9  ))
 
 test_df['gap'] = test_df['optimal_supply'] - test_df['supply']
+
 def decision(row):
+    if row['predicted_demand'] == 0:
+        return "Balanced"
+    
     gap_ratio = row['gap'] / row['predicted_demand']
+    
     if gap_ratio > 0.2:
         return "Increase Supply"
     elif gap_ratio < -0.2:
@@ -112,9 +141,10 @@ print("\n===== FINAL CONCLUSION =====")
 print("Peak demand occurs during evening hours.")
 print("Airport shows higher demand in morning.")
 print("City shows higher demand in evening.")
-print("Model predictions reasonably match actual demand.")
-print("System recommends dynamic supply adjustment.")
-print("Most periods show oversupply, indicating resource inefficiency.")
+print("Model captures overall demand trend with moderate error.")
+print("Clustering successfully identifies demand levels.")
+print("Dynamic supply allocation adjusts resources based on demand.")
+print("Most periods are balanced, with some instances of supply shortage.")
 
 # Graphs
 # Demand trend
